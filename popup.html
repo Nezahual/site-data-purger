@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>SiteDataPurge</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="popup-container">
+    <header>
+      <h3>🧹 Limpiar Datos</h3>
+    </header>
+
+    <div class="main-content">
+      <div id="pro-features" style="margin-bottom: 12px;">
+        <div class="form-group">
+          <label for="domain-select">Selecciona un dominio:</label>
+          <select id="domain-select">
+            <option value="">Cargando dominios...</option>
+          </select>
+          
+          <div id="unconfigured-state" style="display: none; margin-top: 10px; padding: 8px; background: var(--bg-color); border-radius: 6px; text-align: center; border: 1px dashed var(--border-color);">
+            <span style="font-size: 0.8rem; display: block; margin-bottom: 6px;">Sitio no configurado</span>
+            <button id="btn-configure-current" class="btn btn-thin btn-secondary" style="width: 100%; font-size: 0.8rem;">⚙️ Añadir a la configuración</button>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button id="btn-clear" class="btn btn-danger" disabled>Borrar datos</button>
+          <button id="btn-reload" class="btn btn-secondary">Recargar</button>
+        </div>
+      </div>
+
+      <div class="quick-actions" style="display: flex; flex-direction: column;">
+        <button id="btn-quick-cookies" class="btn btn-thin btn-secondary" title="Borrar cookies e ignorar la caché visual">🍪 Borrar solo Cookies + F5 (página actual)</button>
+      </div>
+
+      <div id="status-message" class="status-msg"></div>
+    </div>
+
+    <footer>
+      <a href="#" id="open-options">⚙️ Configuración</a>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>
