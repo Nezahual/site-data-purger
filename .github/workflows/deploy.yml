@@ -17,6 +17,14 @@ jobs:
         with:
           node-version: 24
 
+      - name: Verify secrets  
+        run: |
+          echo "Checking secrets..."  
+          echo "EXTENSION_ID: ${{ secrets.EXTENSION_ID != '' && 'SET' || 'MISSING' }}"  
+          echo "CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID != '' && 'SET' || 'MISSING' }}"  
+          echo "CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET != '' && 'SET' || 'MISSING' }}"  
+          echo "CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN != '' && 'SET' || 'MISSING' }}"
+
       - name: Zip extension
         run: |
           zip -r SiteDataPurger.zip . -x "*.git/*" "*.github/*" "README.md"
