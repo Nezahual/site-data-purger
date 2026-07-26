@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClear = document.getElementById('btn-clear');
   const btnReload = document.getElementById('btn-reload');
   const btnQuickCookies = document.getElementById('btn-quick-cookies');
+  const btnQuickCache = document.getElementById('btn-quick-cache');
   const openOptionsLink = document.getElementById('open-options');
   const statusMsg = document.getElementById('status-message');
 
@@ -136,6 +137,24 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         showStatus('URL inválida.', 'error');
       }
+    });
+  });
+
+  btnQuickCache.addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs || !tabs[0] || !tabs[0].id) {
+        showStatus('No se pudo detectar la página actual.', 'error');
+        return;
+      }
+
+      chrome.browsingData.remove(
+        {},
+        { cache: true },
+        () => {
+          showStatus('Caché del navegador borrada. Recargando...', 'success');
+          chrome.tabs.reload(tabs[0].id, { bypassCache: true });
+        }
+      );
     });
   });
 
