@@ -19,7 +19,7 @@ jobs:
 
       - name: Zip extension
         run: |
-          zip -r SiteDataPurger.zip . -x "*.git*" "*.github*" "README.md"
+          zip -r SiteDataPurger.zip . -x "*.git/*" "*.github/*" "README.md"
 
       - name: Upload to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0
