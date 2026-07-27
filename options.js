@@ -15,39 +15,77 @@ document.addEventListener('DOMContentLoaded', () => {
   const labelLite = document.getElementById('label-lite');
   const labelPro = document.getElementById('label-pro');
   const proSettingsContainer = document.getElementById('pro-settings-container');
+  const langSelect = document.getElementById('lang-select');
 
   let isEditing = false;
   let editingOriginalUrl = null;
   let isUnlocked = false;
+  let currentLang = 'es';
 
+  // Toggle padlock advanced fields
   unlockBtn.addEventListener('click', () => {
     isUnlocked = !isUnlocked;
     unlockBtn.textContent = isUnlocked ? '🔓' : '🔒';
-    unlockBtn.title = isUnlocked ? 'Bloquear opciones avanzadas' : 'Desbloquear opciones avanzadas';
+    updateLockStatusUI();
+  });
+
+  function updateLockStatusUI() {
+    unlockBtn.title = isUnlocked 
+      ? (currentLang === 'en' ? 'Lock advanced options' : 'Bloquear opciones avanzadas')
+      : window.translations[currentLang].unlock_btn_title;
     
-    if (isUnlocked) {
-      lockStatusText.innerHTML = 'Datos Avanzados: <span style="color: #22c55e; text-shadow: 0 0 8px rgba(34,197,94,0.7); font-weight: bold;">unlocked</span>';
-    } else {
-      lockStatusText.innerHTML = 'Datos Avanzados: <span style="color: #ef4444; text-shadow: 0 0 8px rgba(239,68,68,0.7); font-weight: bold;">locked</span>';
-    }
+    const labelText = currentLang === 'en' ? 'Advanced data' : 'Datos avanzados';
+    const statusColor = isUnlocked ? '#22c55e' : '#ef4444';
+    const statusShadow = isUnlocked ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)';
+    const statusWord = isUnlocked 
+      ? window.translations[currentLang].msg_status_unlocked 
+      : window.translations[currentLang].msg_status_locked;
+
+    lockStatusText.innerHTML = `${labelText}: <span style="color: ${statusColor}; text-shadow: 0 0 8px ${statusShadow}; font-weight: bold;">${statusWord}</span>`;
 
     advancedCheckboxes.forEach(cb => {
       cb.disabled = !isUnlocked;
-      cb.title = isUnlocked ? '' : 'Haz clic en el candado para desbloquear';
+      cb.title = isUnlocked ? '' : window.translations[currentLang].tooltip_candado;
     });
-  });
+  }
 
-  // Initial Mode Setup
+  // Initial Mode & Language Setup
   chrome.storage.local.get('globalSettings', (data) => {
-    const mode = (data.globalSettings && data.globalSettings.mode) ? data.globalSettings.mode : 'lite';
+    const settings = data.globalSettings || {};
+    const mode = settings.mode || 'lite';
+    currentLang = settings.lang || window.getDefaultLanguage();
+
     modeToggle.checked = (mode === 'pro');
+    langSelect.value = currentLang;
+
     updateVisualMode();
+    window.translatePage(currentLang);
+    updateLockStatusUI();
+    loadDomains();
   });
 
   modeToggle.addEventListener('change', () => {
     const newMode = modeToggle.checked ? 'pro' : 'lite';
-    chrome.storage.local.set({ globalSettings: { mode: newMode } }, () => {
-      updateVisualMode();
+    chrome.storage.local.get('globalSettings', (data) => {
+      const settings = data.globalSettings || {};
+      settings.mode = newMode;
+      chrome.storage.local.set({ globalSettings: settings }, () => {
+        updateVisualMode();
+      });
+    });
+  });
+
+  langSelect.addEventListener('change', () => {
+    currentLang = langSelect.value;
+    chrome.storage.local.get('globalSettings', (data) => {
+      const settings = data.globalSettings || {};
+      settings.lang = currentLang;
+      chrome.storage.local.set({ globalSettings: settings }, () => {
+        window.translatePage(currentLang);
+        updateLockStatusUI();
+        loadDomains();
+        updateFormButtons();
+      });
     });
   });
 
@@ -63,17 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Cargar dominios guardados al iniciar
-  loadDomains();
-
-  // Leer si venimos desde el popup con un dominio para autocompletar
+  // Prefill check from popup parameters
   const urlParams = new URLSearchParams(window.location.search);
   const prefillDomain = urlParams.get('domain');
   if (prefillDomain) {
     urlInput.value = prefillDomain;
   }
 
-  // Búsqueda predictiva (filtro contains)
+  // Predictive search
   urlInput.addEventListener('input', (e) => {
     const query = e.target.value.trim().toLowerCase();
     if (query.length >= 3) {
@@ -84,12 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const urlObj = new URL(item.url);
             const origin = urlObj.origin;
-            // Filtro 'contains'
             if (origin.toLowerCase().includes(query)) {
                 origins.add(origin);
             }
           } catch (e) {
-            // Ignorar URLs inválidas
+            // Ignore invalid URLs
           }
         });
 
@@ -105,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Guardar o Actualizar dominio
+  // Save / Update domain
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     
@@ -119,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       origin = new URL(rawUrl).origin;
     } catch (err) {
-      showStatus('URL inválida. Introduce un dominio válido.', 'error');
+      showStatus(window.translations[currentLang].msg_invalid_url, 'error');
       return;
     }
 
@@ -130,23 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (Object.keys(dataTypes).length === 0) {
-      showStatus('Selecciona al menos un tipo de dato a borrar.', 'error');
+      const msg = currentLang === 'en'
+        ? 'Select at least one data type to clear.'
+        : 'Selecciona al menos un tipo de dato a borrar.';
+      showStatus(msg, 'error');
       return;
     }
 
     chrome.storage.local.get(null, (items) => {
-      // Prevención de duplicados
       if (!isEditing && items[origin]) {
-        showStatus('Este dominio ya está registrado. Búscalo en la tabla para editarlo.', 'error');
+        showStatus(window.translations[currentLang].msg_already_exists, 'error');
         return;
       }
       
       if (isEditing && origin !== editingOriginalUrl && items[origin]) {
-        showStatus('El nuevo dominio ya está registrado en otra entrada.', 'error');
+        const msg = currentLang === 'en'
+          ? 'The new domain is already registered in another entry.'
+          : 'El nuevo dominio ya está registrado en otra entrada.';
+        showStatus(msg, 'error');
         return;
       }
 
-      // Si se cambió el dominio durante la edición, borramos el antiguo
       if (isEditing && origin !== editingOriginalUrl) {
         chrome.storage.local.remove(editingOriginalUrl);
       }
@@ -155,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dataToSave[origin] = dataTypes;
 
       chrome.storage.local.set(dataToSave, () => {
-        showStatus('Configuración guardada correctamente.', 'success');
+        showStatus(window.translations[currentLang].msg_saved, 'success');
         resetForm();
         loadDomains();
       });
@@ -209,12 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const editBtn = document.createElement('button');
         editBtn.className = 'btn btn-secondary btn-sm';
-        editBtn.textContent = 'Editar';
+        editBtn.textContent = window.translations[currentLang].msg_action_edit;
         editBtn.onclick = () => editDomain(domain, config);
         
         const delBtn = document.createElement('button');
         delBtn.className = 'btn btn-danger btn-sm';
-        delBtn.textContent = 'Eliminar';
+        delBtn.textContent = window.translations[currentLang].msg_action_delete;
         delBtn.onclick = () => deleteDomain(domain);
 
         tdActions.appendChild(editBtn);
@@ -236,19 +274,21 @@ document.addEventListener('DOMContentLoaded', () => {
       cb.checked = !!config[cb.value];
     });
     
-    // Asegurar que siempre esté bloqueado al editar, requiriendo click manual
     if (isUnlocked) {
       unlockBtn.click();
     }
 
-    saveBtn.textContent = 'Actualizar Configuración';
+    updateFormButtons();
     cancelEditBtn.classList.remove('hidden');
     document.querySelector('.form-section').classList.add('editing-mode');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function deleteDomain(domain) {
-    if (confirm(`¿Estás seguro de que deseas eliminar la configuración para ${domain}?`)) {
+    const confirmMsg = currentLang === 'en' 
+      ? `Are you sure you want to delete the configuration for ${domain}?` 
+      : `¿Estás seguro de que deseas eliminar la configuración para ${domain}?`;
+    if (confirm(confirmMsg)) {
       chrome.storage.local.remove(domain, () => {
         loadDomains();
       });
@@ -259,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.reset();
     isEditing = false;
     editingOriginalUrl = null;
-    saveBtn.textContent = 'Guardar Configuración';
+    updateFormButtons();
     cancelEditBtn.classList.add('hidden');
     document.querySelector('.form-section').classList.remove('editing-mode');
     document.querySelectorAll('input[name="dataType"]').forEach(cb => {
@@ -267,7 +307,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     if (isUnlocked) {
-      unlockBtn.click(); // volver a bloquear
+      unlockBtn.click(); // revert locks
+    }
+  }
+
+  function updateFormButtons() {
+    if (isEditing) {
+      saveBtn.textContent = currentLang === 'en' ? 'Update Configuration' : 'Actualizar Configuración';
+    } else {
+      saveBtn.textContent = window.translations[currentLang].save_config_btn;
     }
   }
 

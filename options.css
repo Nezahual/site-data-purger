@@ -304,6 +304,12 @@ th {
   .status-error { background-color: #7f1d1d; color: #fca5a5; }
 }
 
+header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
 /* Mode Switch & Visual States */
 .mode-switch-container {
   display: flex;
@@ -315,6 +321,31 @@ th {
   padding: 12px 24px;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.lang-selector-group {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-selector-group select {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.lang-selector-group select:focus {
+  border-color: var(--primary-color);
 }
 
 .mode-label {

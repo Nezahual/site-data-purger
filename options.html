@@ -3,114 +3,119 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Opciones - SiteDataPurge</title>
+  <title data-i18n="options_title">Opciones - SiteDataPurge</title>
   <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
   <div class="container">
     <header>
-      <h1>⚙️ Opciones de SiteDataPurge</h1>
-      <p>Configura los dominios y los datos que deseas poder borrar.</p>
+      <h1 data-i18n="options_header_title">⚙️ Opciones de SiteDataPurge</h1>
+      <p data-i18n="options_header_subtitle">Configura los dominios y los datos que deseas poder borrar.</p>
+      
+      <div class="lang-selector-group">
+        <label for="lang-select" data-i18n="language_label">Idioma:</label>
+        <select id="lang-select">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
     </header>
 
     <div class="mode-switch-container">
-      <span class="mode-label" id="label-lite">Modo Lite</span>
+      <span class="mode-label" id="label-lite" data-i18n="mode_lite">Modo Lite</span>
       <label class="switch">
         <input type="checkbox" id="mode-toggle">
         <span class="slider round"></span>
       </label>
-      <span class="mode-label" id="label-pro">Modo Avanzado</span>
+      <span class="mode-label" id="label-pro" data-i18n="mode_advanced">Modo Avanzado</span>
     </div>
 
     <div class="split-layout" id="pro-settings-container">
       <!-- Columna Izquierda: Formulario -->
       <section class="form-section">
-        <h2>Añadir / Editar dominio</h2>
+        <h2 data-i18n="form_title">Añadir / editar dominio</h2>
         <form id="domain-form">
           <div class="form-group">
-            <label for="domain-input">URL del dominio</label>
-            <input type="url" id="domain-input" list="history-datalist" placeholder="https://ejemplo.com" required
+            <label for="domain-input" data-i18n="input_domain_label">URL del dominio</label>
+            <input type="url" id="domain-input" list="history-datalist" placeholder="https://ejemplo.com" data-i18n-placeholder="input_domain_placeholder" required
               autocomplete="off">
             <datalist id="history-datalist"></datalist>
-            <small>Escribe al menos 3 caracteres para buscar en el historial.</small>
+            <small data-i18n="history_hint">Escribe al menos 3 caracteres para buscar en el historial.</small>
           </div>
 
           <div class="form-group checkbox-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <p style="margin: 0;"><strong>Datos a borrar:</strong></p>
+              <p style="margin: 0;"><strong data-i18n="data_to_clear_label">Datos a borrar:</strong></p>
               <div style="display: flex; align-items: center; gap: 6px;">
-                <span id="lock-status-text" style="font-size: 0.85rem; color: var(--text-color);">Datos avanzados: <span
-                    style="color: #ef4444; text-shadow: 0 0 8px rgba(239,68,68,0.7); font-weight: bold;">locked</span></span>
-                <button type="button" id="unlock-advanced-btn" title="Desbloquear opciones avanzadas"
-                  style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 4px; color: #ef4444; transition: opacity 0.2s;">🔒</button>
+                <span id="lock-status-text" style="font-size: 0.85rem; color: var(--text-color);">
+                  <!-- Dinámico por JS -->
+                </span>
+                <button type="button" id="unlock-advanced-btn" data-i18n-title="unlock_btn_title" title="Desbloquear opciones avanzadas" style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 4px; color: #ef4444; transition: opacity 0.2s;">🔒</button>
               </div>
             </div>
             <label>
               <div class="checkbox-item"><input type="checkbox" name="dataType" value="cookies" checked> Cookies</div>
-              <span class="info-icon"
+              <span class="info-icon" data-i18n-tooltip="tooltip_cookies"
                 data-tooltip="Identidad y rastreo. Borrarlas hará que se cierre tu sesión (tendrás que volver a poner tu contraseña) y se vacíe tu carrito de la compra si no estabas registrado.">ℹ️</span>
             </label>
             <label>
               <div class="checkbox-item"><input type="checkbox" name="dataType" value="cacheStorage" checked>
                 CacheStorage</div>
-              <span class="info-icon"
+              <span class="info-icon" data-i18n-tooltip="tooltip_cachestorage"
                 data-tooltip="Guarda la 'estructura' de la web (archivos, imágenes, código) para que funcione rápido o sin internet. Bórralo si la web se ve rota o con un diseño antiguo.">ℹ️</span>
             </label>
             <label>
               <div class="checkbox-item"><input type="checkbox" name="dataType" value="localStorage"> LocalStorage</div>
-              <span class="info-icon"
+              <span class="info-icon" data-i18n-tooltip="tooltip_localstorage"
                 data-tooltip="Guarda tus 'ajustes' personales (modo oscuro, si ya aceptaste el aviso de cookies, etc). Bórralo si quieres resetear tus preferencias o la web hace cosas raras.">ℹ️</span>
             </label>
             <label>
-              <div class="checkbox-item"><input type="checkbox" name="dataType" value="indexedDB" class="advanced-cb"
-                  disabled title="Haz clic en el candado para desbloquear"> IndexedDB</div>
-              <span class="info-icon"
+              <div class="checkbox-item"><input type="checkbox" name="dataType" value="indexedDB" class="advanced-cb" disabled data-i18n-title="tooltip_candado" title="Haz clic en el candado para desbloquear"> IndexedDB</div>
+              <span class="info-icon" data-i18n-tooltip="tooltip_indexeddb"
                 data-tooltip="Base de datos de la web. Borrarla reinicia la app por completo. Perderás el progreso de juegos web o mensajes de chats (como WhatsApp Web) que no se hayan subido a la nube.">ℹ️</span>
             </label>
             <label>
-              <div class="checkbox-item"><input type="checkbox" name="dataType" value="fileSystems" class="advanced-cb"
-                  disabled title="Haz clic en el candado para desbloquear"> File System</div>
-              <span class="info-icon"
+              <div class="checkbox-item"><input type="checkbox" name="dataType" value="fileSystems" class="advanced-cb" disabled data-i18n-title="tooltip_candado" title="Haz clic en el candado para desbloquear"> File System</div>
+              <span class="info-icon" data-i18n-tooltip="tooltip_filesystem"
                 data-tooltip="Archivos guardados por la web. Borrarlo eliminará descargas internas de la página, como borradores de documentos editados que aún no has guardado en tu PC.">ℹ️</span>
             </label>
             <label>
-              <div class="checkbox-item"><input type="checkbox" name="dataType" value="serviceWorkers"
-                  class="advanced-cb" disabled title="Haz clic en el candado para desbloquear"> Service Workers
+              <div class="checkbox-item"><input type="checkbox" name="dataType" value="serviceWorkers" class="advanced-cb" disabled data-i18n-title="tooltip_candado" title="Haz clic en el candado para desbloquear"> Service Workers
               </div>
-              <span class="info-icon"
+              <span class="info-icon" data-i18n-tooltip="tooltip_serviceworkers"
                 data-tooltip="El 'motor' en segundo plano. Borrarlo corta de raíz las notificaciones push de esa web y arregla problemas graves donde la página se queda totalmente en blanco o congelada.">ℹ️</span>
             </label>
           </div>
 
-          <button type="submit" id="save-btn" class="btn btn-primary btn-block">Guardar configuración</button>
-          <button type="button" id="cancel-edit-btn" class="btn btn-secondary btn-block hidden">Cancelar
-            edición</button>
+          <button type="submit" id="save-btn" class="btn btn-primary btn-block" data-i18n="save_config_btn">Guardar configuración</button>
+          <button type="button" id="cancel-edit-btn" class="btn btn-secondary btn-block hidden" data-i18n="cancel_edit_btn">Cancelar edición</button>
         </form>
         <div id="status-message" class="status-msg"></div>
       </section>
 
       <!-- Columna Derecha: Tabla -->
       <section class="table-section">
-        <h2>Dominios configurados</h2>
+        <h2 data-i18n="table_title">Dominios configurados</h2>
         <div class="table-container">
           <table id="domains-table">
             <thead>
               <tr>
-                <th>Dominio</th>
-                <th>Datos a borrar</th>
-                <th>Acciones</th>
+                <th data-i18n="th_domain">Dominio</th>
+                <th data-i18n="th_data_to_clear">Datos a borrar</th>
+                <th data-i18n="th_actions">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <!-- Se rellena con JS -->
             </tbody>
           </table>
-          <div id="empty-state" class="empty-state">No hay dominios configurados.</div>
+          <div id="empty-state" class="empty-state" data-i18n="empty_state">No hay dominios configurados.</div>
         </div>
       </section>
     </div>
   </div>
+  <script src="i18n.js"></script>
   <script src="options.js"></script>
 </body>
 

@@ -8,12 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusMsg = document.getElementById('status-message');
 
   let domainConfigs = {};
+  let currentLang = 'es';
 
   // Initialize
   chrome.storage.local.get(null, (items) => {
     domainConfigs = items;
     
-    const mode = (domainConfigs.globalSettings && domainConfigs.globalSettings.mode) ? domainConfigs.globalSettings.mode : 'lite';
+    // Get mode & language
+    const settings = domainConfigs.globalSettings || {};
+    const mode = settings.mode || 'lite';
+    currentLang = settings.lang || window.getDefaultLanguage();
+
+    // Translate UI
+    window.translatePage(currentLang);
+
     const proFeatures = document.getElementById('pro-features');
     if (mode === 'lite' && proFeatures) {
       proFeatures.style.display = 'none';
@@ -26,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add default placeholder
     const defaultOption = document.createElement('option');
     defaultOption.value = "";
-    defaultOption.textContent = domains.length === 0 ? "No hay dominios configurados" : "-- Selecciona un dominio --";
+    defaultOption.textContent = domains.length === 0 
+      ? window.translations[currentLang].popup_no_domains 
+      : window.translations[currentLang].popup_select_placeholder;
     select.appendChild(defaultOption);
 
     // Populate select
@@ -51,15 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
             select.value = currentOrigin;
             btnClear.disabled = false;
           } else if (currentOrigin.startsWith('http')) {
-            // Añadirlo temporalmente al select para que los botones rápidos funcionen
+            // Add temporarily to select
             const tempOption = document.createElement('option');
             tempOption.value = currentOrigin;
-            tempOption.textContent = currentOrigin + ' (Sin configurar)';
+            tempOption.textContent = currentOrigin + window.translations[currentLang].popup_unconfigured_tag;
             select.appendChild(tempOption);
             select.value = currentOrigin;
             btnClear.disabled = true;
 
-            // El dominio no está configurado, mostrar opción de añadir
+            // Show unconfigured panel
             const unconfState = document.getElementById('unconfigured-state');
             const btnConfigure = document.getElementById('btn-configure-current');
             
@@ -81,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnClear.addEventListener('click', () => {
     const selectedDomain = select.value;
     if (!selectedDomain || !domainConfigs[selectedDomain]) {
-      showStatus('Por favor, selecciona un dominio.', 'error');
+      showStatus(window.translations[currentLang].msg_please_select, 'error');
       return;
     }
 
@@ -95,34 +105,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (Object.keys(originDataToRemove).length === 0) {
-      showStatus('No hay datos configurados para borrar en este dominio.', 'error');
+      showStatus(window.translations[currentLang].msg_no_data_configured, 'error');
       return;
     }
 
     btnClear.disabled = true;
-    btnClear.textContent = 'Borrando...';
+    btnClear.textContent = window.translations[currentLang].msg_btn_clearing;
 
     chrome.browsingData.remove(
       { origins: [selectedDomain] },
       originDataToRemove,
       () => {
         btnClear.disabled = false;
-        btnClear.textContent = 'Borrar Datos';
-        showStatus('Datos borrados exitosamente.', 'success');
+        btnClear.textContent = window.translations[currentLang].popup_btn_clear;
+        showStatus(window.translations[currentLang].msg_cleared_success, 'success');
       }
     );
   });
 
+  // Quick Cookies button
   btnQuickCookies.addEventListener('click', () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (!tabs || !tabs[0] || !tabs[0].url) {
-        showStatus('No se pudo detectar la página actual.', 'error');
+        showStatus(window.translations[currentLang].msg_no_active_page, 'error');
         return;
       }
       try {
         const currentOrigin = new URL(tabs[0].url).origin;
         if (!currentOrigin.startsWith('http')) {
-          showStatus('No se puede actuar sobre esta página.', 'error');
+          showStatus(window.translations[currentLang].msg_cannot_act_page, 'error');
           return;
         }
 
@@ -130,20 +141,21 @@ document.addEventListener('DOMContentLoaded', () => {
           { origins: [currentOrigin] },
           { cookies: true },
           () => {
-            showStatus('Cookies borradas. Recargando...', 'success');
+            showStatus(window.translations[currentLang].msg_cookies_cleared_reloading, 'success');
             chrome.tabs.reload(tabs[0].id, { bypassCache: true });
           }
         );
       } catch (e) {
-        showStatus('URL inválida.', 'error');
+        showStatus(window.translations[currentLang].msg_invalid_url_popup, 'error');
       }
     });
   });
 
+  // Quick Cache button
   btnQuickCache.addEventListener('click', () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (!tabs || !tabs[0] || !tabs[0].id) {
-        showStatus('No se pudo detectar la página actual.', 'error');
+        showStatus(window.translations[currentLang].msg_no_active_page, 'error');
         return;
       }
 
@@ -151,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {},
         { cache: true },
         () => {
-          showStatus('Caché del navegador borrada. Recargando...', 'success');
+          showStatus(window.translations[currentLang].msg_cache_cleared_reloading, 'success');
           chrome.tabs.reload(tabs[0].id, { bypassCache: true });
         }
       );
